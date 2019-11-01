@@ -3,11 +3,9 @@ import os
 from collections import Counter
 import itertools
 import math
-import timeit
-from time import time
 
 
-def apriori(database_file, min_support, output_file):
+def apriori(database_file, min_support):
     number_of_transactions, number_of_items, transaction_list = read_database(database_file)
     _min_support_count = math.ceil(min_support * number_of_transactions)
 
@@ -25,9 +23,7 @@ def apriori(database_file, min_support, output_file):
             break
         fk = lk_plus_1
 
-    print("result: ")
-    print(fk)
-    print(len(fk))
+    return fk
 
 
 def eliminate_candidates(_support_dictionary, _candidate_list, _min_support_count):
@@ -73,10 +69,10 @@ def generate_candidate(item_set_list, actual_items, k):
     for item in actual_items:
         for item_set in item_set_list:
             if item not in item_set:
-                x = set(item_set)
-                x.add(item)
-                x = frozenset(x)
-                _final_candidate_item_set_list.add(x)
+                temp_set = set(item_set)
+                temp_set.add(item)
+                temp_set = frozenset(temp_set)
+                _final_candidate_item_set_list.add(temp_set)
 
     return _final_candidate_item_set_list
 
@@ -125,10 +121,17 @@ def main():
     min_support = float(str(args.minsupp))
     output_file = os.path.abspath(str(args.output_file))
 
-    apriori(database_file, min_support, output_file)
+    final_result = apriori(database_file, min_support)
+
+    f = open(output_file, "w")
+
+    for item_set in final_result:
+        f.writelines(' '.join([str(elem) for elem in item_set]))
+        f.write('\n')
+
+    f.close()
 
 
 # main method where the program starts
 if __name__ == '__main__':
-    x = timeit.timeit(lambda: main(), number=1)
-    print(x)
+    main()
