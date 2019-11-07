@@ -10,6 +10,8 @@ def apriori(database_file, min_support):
     _min_support_count = math.ceil(min_support * number_of_transactions)
 
     fk = generate_f1(transaction_list, _min_support_count)
+    final_list = [fk]
+    final_count = len(fk)
     actual_items = set(item for sublist in fk for item in sublist)
     k = 1
     while fk:
@@ -22,8 +24,10 @@ def apriori(database_file, min_support):
         if not lk_plus_1:
             break
         fk = lk_plus_1
+        final_count += len(fk)
+        final_list.append(fk)
 
-    return fk
+    return final_list, final_count, number_of_items
 
 
 def eliminate_candidates(_support_dictionary, _candidate_list, _min_support_count):
@@ -63,9 +67,6 @@ def prune_candidate(_lk_plus_1, _fk, k):
 def generate_candidate(item_set_list, actual_items, k):
     _final_candidate_item_set_list = set()
 
-    # TODO: need to find efficient way to find candidates,
-    # TODO: currently many redundant operations are being done
-    # TODO: also do we need to create item set every time ?
     for item in actual_items:
         for item_set in item_set_list:
             if item not in item_set:
@@ -79,7 +80,6 @@ def generate_candidate(item_set_list, actual_items, k):
 
 def generate_f1(_transaction_list, _min_support):
     cnt = Counter(item for sublist in _transaction_list for item in sublist)
-    # TODO: do we need frozenset?
     item_set = [frozenset([key]) for key, value in cnt.items() if value >= _min_support]
     return item_set
 
@@ -121,13 +121,17 @@ def main():
     min_support = float(str(args.minsupp))
     output_file = os.path.abspath(str(args.output_file))
 
-    final_result = apriori(database_file, min_support)
+    final_result, final_count, number_of_items = apriori(database_file, min_support)
+
+    answer = ''.join([str(final_count), " ", str(number_of_items), '\n'])
+
+    for frequent in final_result:
+        for item_set in frequent:
+            y = ' '.join([str(elem) for elem in item_set])
+            answer = ''.join([answer, y, '\n'])
 
     f = open(output_file, "w")
-
-    for item_set in final_result:
-        f.writelines(' '.join([str(elem) for elem in item_set]))
-        f.write('\n')
+    f.write(answer)
 
     f.close()
 
