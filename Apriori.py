@@ -181,6 +181,8 @@ def main():
     min_support = float(str(args.minsupp))
     output_file = os.path.abspath(str(args.output_file))
 
+    print(database_file)
+
     # get the final frequent item sets, total number of items and unique items
     final_result, final_count, number_of_items = apriori(database_file, min_support)
 
